@@ -2,148 +2,144 @@ import pygame
 import math
 import heapq
 
-# Inicialização do Pygame
+# inicializacao
 pygame.init()
 
-# Configurações do jogo
-width, height = 600, 600
-rows, cols = 20, 20
-square_size = width // cols
+# configuracoes
+largura, altura = 600, 600
+linhas, colunas = 20, 20
+tamanho_quadrado = largura // colunas
 
-# Cores
-colors = {
-    "white": (255, 255, 255),
-    "black": (0, 0, 0),
-    "red": (255, 0, 0),
-    "blue": (0, 0, 255),
-    "yellow": (255, 255, 0),
-    "green": (0, 255, 0),
-    "gray": (128, 128, 128)
+# cores
+cores = {
+    "branco": (255, 255, 255),
+    "preto": (0, 0, 0),
+    "vermelho": (255, 0, 0),
+    "azul": (0, 0, 255),
+    "amarelo": (255, 255, 0),
+    "verde": (0, 255, 0),
+    "cinza": (128, 128, 128)
 }
 
-# Tela do jogo
-screen = pygame.display.set_mode((width, height))
+# tela
+tela = pygame.display.set_mode((largura, altura))
 
-# Posições iniciais
-start = (0, 0)
-goal = (cols-1, rows-1)
-barriers = [
+# posicoes
+inicio = (0, 0)
+objetivo = (colunas-1, linhas-1)
+barreiras = [
     (1, 0), (1, 1), (1, 2), (1, 3), (1, 4),
     (2, 2), (3, 1), (4, 2), (5, 3), (6, 4)
 ]
-power_fruits = [(4, 4)]
-enemy_position = [8, 8]  # Posições do inimigo como lista para permitir modificações
+frutas_poder = [(4, 4)]
+posicao_inimigo = [8, 8]
 
-# Função de heurística (distância Euclidiana)
-def euclidean_distance(a, b):
+# heuristica
+def distancia_euclidiana(a, b):
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
-# Algoritmo A* para encontrar o caminho
-def a_star(start, goal, barriers, power_fruits, has_power_fruit):
-    open_list = []
-    heapq.heappush(open_list, (0, start))
-    came_from = {}
-    g_score = {start: 0}
-    f_score = {start: euclidean_distance(start, goal)}
+# algoritmo
+def a_estrela(inicio, objetivo, barreiras, frutas_poder, tem_fruta_poder):
+    lista_aberta = []
+    heapq.heappush(lista_aberta, (0, inicio))
+    veio_de = {}
+    pontuacao_g = {inicio: 0}
+    pontuacao_f = {inicio: distancia_euclidiana(inicio, objetivo)}
 
-    while open_list:
-        _, current = heapq.heappop(open_list)
+    while lista_aberta:
+        _, atual = heapq.heappop(lista_aberta)
 
-        if current == goal:
-            path = []
-            while current in came_from:
-                path.append(current)
-                current = came_from[current]
-            path.append(start)
-            return path[::-1]
+        if atual == objetivo:
+            caminho = []
+            while atual in veio_de:
+                caminho.append(atual)
+                atual = veio_de[atual]
+            caminho.append(inicio)
+            return caminho[::-1]
 
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]:
-            neighbor = (current[0] + dx, current[1] + dy)
-            if 0 <= neighbor[0] < cols and 0 <= neighbor[1] < rows:
-                if neighbor in barriers and not has_power_fruit:
-                    continue  # Não pode passar por barreiras sem a fruta
+            vizinho = (atual[0] + dx, atual[1] + dy)
+            if 0 <= vizinho[0] < colunas and 0 <= vizinho[1] < linhas:
+                if vizinho in barreiras and not tem_fruta_poder:
+                    continue
 
-                tentative_g_score = g_score[current] + euclidean_distance(current, neighbor)
-                if neighbor in power_fruits:
-                    has_power_fruit = True
+                pontuacao_g_tentativa = pontuacao_g[atual] + distancia_euclidiana(atual, vizinho)
+                if vizinho in frutas_poder:
+                    tem_fruta_poder = True
 
-                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = tentative_g_score + euclidean_distance(neighbor, goal)
-                    heapq.heappush(open_list, (f_score[neighbor], neighbor))
+                if vizinho not in pontuacao_g or pontuacao_g_tentativa < pontuacao_g[vizinho]:
+                    veio_de[vizinho] = atual
+                    pontuacao_g[vizinho] = pontuacao_g_tentativa
+                    pontuacao_f[vizinho] = pontuacao_g_tentativa + distancia_euclidiana(vizinho, objetivo)
+                    heapq.heappush(lista_aberta, (pontuacao_f[vizinho], vizinho))
 
     return []
 
-# Desenha a grade do jogo
-def draw_grid():
-    for x in range(0, width, square_size):
-        for y in range(0, height, square_size):
-            rect = pygame.Rect(x, y, square_size, square_size)
-            pygame.draw.rect(screen, colors["black"], rect, 1)
+# grade
+def desenhar_grade():
+    for x in range(0, largura, tamanho_quadrado):
+        for y in range(0, altura, tamanho_quadrado):
+            retangulo = pygame.Rect(x, y, tamanho_quadrado, tamanho_quadrado)
+            pygame.draw.rect(tela, cores["preto"], retangulo, 1)
 
-# Desenha os elementos do jogo
-def draw_elements():
-    for barrier in barriers:
-        rect = pygame.Rect(barrier[0] * square_size, barrier[1] * square_size, square_size, square_size)
-        pygame.draw.rect(screen, colors["red"], rect)
+# elementos
+def desenhar_elementos():
+    for barreira in barreiras:
+        retangulo = pygame.Rect(barreira[0] * tamanho_quadrado, barreira[1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado)
+        pygame.draw.rect(tela, cores["vermelho"], retangulo)
 
-    for fruit in power_fruits:
-        rect = pygame.Rect(fruit[0] * square_size, fruit[1] * square_size, square_size, square_size)
-        pygame.draw.rect(screen, colors["yellow"], rect)
+    for fruta in frutas_poder:
+        retangulo = pygame.Rect(fruta[0] * tamanho_quadrado, fruta[1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado)
+        pygame.draw.rect(tela, cores["amarelo"], retangulo)
 
-    pygame.draw.rect(screen, colors["blue"], (start[0] * square_size, start[1] * square_size, square_size, square_size))
-    pygame.draw.rect(screen, colors["green"], (goal[0] * square_size, goal[1] * square_size, square_size, square_size))
-    pygame.draw.rect(screen, colors["gray"], (enemy_position[0] * square_size, enemy_position[1] * square_size, square_size, square_size))
+    pygame.draw.rect(tela, cores["azul"], (inicio[0] * tamanho_quadrado, inicio[1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado))
+    pygame.draw.rect(tela, cores["verde"], (objetivo[0] * tamanho_quadrado, objetivo[1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado))
+    pygame.draw.rect(tela, cores["cinza"], (posicao_inimigo[0] * tamanho_quadrado, posicao_inimigo[1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado))
 
-# Atualiza a posição do inimigo
-def update_enemy_position():
-    global enemy_position
-    # Movimenta o inimigo para cima e para baixo
-    if enemy_position[1] % 2 == 0:
-        enemy_position[1] = (enemy_position[1] + 1) % rows
+# inimigo
+def atualizar_posicao_inimigo():
+    global posicao_inimigo
+    if posicao_inimigo[1] % 2 == 0:
+        posicao_inimigo[1] = (posicao_inimigo[1] + 1) % linhas
     else:
-        enemy_position[1] = (enemy_position[1] - 1) % rows
+        posicao_inimigo[1] = (posicao_inimigo[1] - 1) % linhas
 
-# Função principal do jogo
-def main():
-    running = True
-    has_power_fruit = False
-    path = a_star(start, goal, barriers, power_fruits, has_power_fruit)
-    path_index = 0
+# principal
+def principal():
+    rodando = True
+    tem_fruta_poder = False
+    caminho = a_estrela(inicio, objetivo, barreiras, frutas_poder, tem_fruta_poder)
+    indice_caminho = 0
 
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    while rodando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                rodando = False
 
-        # Atualiza a posição do inimigo
-        update_enemy_position()
+        atualizar_posicao_inimigo()
 
-        # Atualiza a posição do caminho
-        if path_index < len(path):
-            current_pos = path[path_index]
-            if current_pos in power_fruits:
-                has_power_fruit = True
-            path_index += 1
+        if indice_caminho < len(caminho):
+            posicao_atual = caminho[indice_caminho]
+            if posicao_atual in frutas_poder:
+                tem_fruta_poder = True
+            indice_caminho += 1
 
-        # Verifica se o caminho foi encontrado
-        if not path:
+        if not caminho:
             print("Nenhum caminho encontrado!")
-            running = False
+            rodando = False
             continue
 
-        screen.fill(colors["white"])
-        draw_grid()
-        draw_elements()
+        tela.fill(cores["branco"])
+        desenhar_grade()
+        desenhar_elementos()
 
-        if path_index < len(path):
-            pygame.draw.rect(screen, colors["blue"], (path[path_index][0] * square_size, path[path_index][1] * square_size, square_size, square_size))
+        if indice_caminho < len(caminho):
+            pygame.draw.rect(tela, cores["azul"], (caminho[indice_caminho][0] * tamanho_quadrado, caminho[indice_caminho][1] * tamanho_quadrado, tamanho_quadrado, tamanho_quadrado))
         
         pygame.display.flip()
-        pygame.time.delay(500)  # Atraso para o movimento do inimigo
+        pygame.time.delay(500)
 
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    principal()
