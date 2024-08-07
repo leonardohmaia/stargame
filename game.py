@@ -28,8 +28,8 @@ tela = pygame.display.set_mode((largura, altura))
 inicio = (0, 0)
 objetivo = (colunas-1, linhas-1)
 barreiras = [
-    (1, 0), (1, 1), (1, 2), (1, 3), (1, 4),
-    (2, 2), (3, 1), (4, 2), (5, 3), (6, 4)
+    (5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5),
+    (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6),
 ]
 frutas_poder = [(4, 4)]
 posicao_inimigo = [8, 8]
