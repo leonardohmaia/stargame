@@ -31,7 +31,7 @@ barreiras = [
     (5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5),
     (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6),
 ]
-frutas_poder = [(4, 4)]
+frutas_poder = [(4, 2)]
 posicao_inimigo = [8, 8]
 
 # heuristica
@@ -40,11 +40,28 @@ def distancia_euclidiana(a, b):
 
 # algoritmo
 def a_estrela(inicio, objetivo, barreiras, frutas_poder, tem_fruta_poder):
+    def heuristica(ponto):
+        return distancia_euclidiana(ponto, objetivo)
+    
+    def caminho_ate_fruta(ponto_inicial, frutas_poder):
+        caminhos = []
+        for fruta in frutas_poder:
+            caminho = a_estrela(ponto_inicial, fruta, barreiras, [], tem_fruta_poder)
+            if caminho:
+                caminhos.append((len(caminho), caminho, fruta))
+        caminhos.sort(key=lambda x: x[0])
+        return caminhos[0] if caminhos else (float('inf'), [], None)
+    
+    if not tem_fruta_poder:
+        distancia, caminho, fruta_proxima = caminho_ate_fruta(inicio, frutas_poder)
+        if caminho:
+            return caminho
+    
     lista_aberta = []
     heapq.heappush(lista_aberta, (0, inicio))
     veio_de = {}
     pontuacao_g = {inicio: 0}
-    pontuacao_f = {inicio: distancia_euclidiana(inicio, objetivo)}
+    pontuacao_f = {inicio: heuristica(inicio)}
 
     while lista_aberta:
         _, atual = heapq.heappop(lista_aberta)
@@ -70,7 +87,7 @@ def a_estrela(inicio, objetivo, barreiras, frutas_poder, tem_fruta_poder):
                 if vizinho not in pontuacao_g or pontuacao_g_tentativa < pontuacao_g[vizinho]:
                     veio_de[vizinho] = atual
                     pontuacao_g[vizinho] = pontuacao_g_tentativa
-                    pontuacao_f[vizinho] = pontuacao_g_tentativa + distancia_euclidiana(vizinho, objetivo)
+                    pontuacao_f[vizinho] = pontuacao_g_tentativa + heuristica(vizinho)
                     heapq.heappush(lista_aberta, (pontuacao_f[vizinho], vizinho))
 
     return []
@@ -122,6 +139,8 @@ def principal():
             posicao_atual = caminho[indice_caminho]
             if posicao_atual in frutas_poder:
                 tem_fruta_poder = True
+                caminho = a_estrela(posicao_atual, objetivo, barreiras, frutas_poder, tem_fruta_poder)
+                indice_caminho = 0
             indice_caminho += 1
 
         if not caminho:
