@@ -32,7 +32,7 @@ barreiras = [
     (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6),
 ]
 frutas_poder = [(4, 2)]
-posicao_inimigo = [8, 8]
+posicao_inimigo = [5, 14]
 
 # heuristica
 def distancia_euclidiana(a, b):
